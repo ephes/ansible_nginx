@@ -1,0 +1,63 @@
+upstream @varnish {
+    server localhost:8008;
+    keepalive 100;
+}
+
+upstream @haproxy {
+    server localhost:8002;
+    keepalive 10;
+}
+
+upstream @app {
+    server localhost:8080;
+}
+
+server {
+    listen {{ ansible_eth0.ipv4.address }}:80 default_server;
+    listen {{ ansible_eth0.ipv4.address }}:443 ssl;
+
+    # Enable SSL. SSL parameters like cipher suite have sensible defaults.
+    ssl_certificate /etc/nginx/ssl/server.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    # we have to accept big images
+    client_max_body_size 50M;
+
+    # The first server name listed is the primary name. We remommend against
+    # using a wildcard server name (*.example.com) as primary.
+    # FIXME
+    server_name {{ server_name }};
+
+    {% if not vagrant %}
+    # Redirect to primary server name (makes URLs unique).
+    if ($host != $server_name) {
+        rewrite . $scheme://$server_name$request_uri redirect;
+    }
+    {% endif %}
+
+    # redirect http -> https
+    if ($scheme = "http") {
+        return 302 https://{{ server_name }}{{ nginx_proxy_set_header_port }}$request_uri;
+    }
+
+    location /static {
+        alias {{ static_dir }};
+    }
+
+    location / {
+        proxy_set_header Host $host{{ nginx_proxy_set_header_port }};
+        # proxy_pass http://@haproxy;
+        proxy_pass http://@app;
+        # proxy_pass http://@varnish;
+        proxy_set_header X-Forwarded-Protocol $scheme;
+    }
+
+    error_page 502 = @maintenance;
+    location @maintenance {
+        root {{ nginx_maintenance_dir }};
+
+        if (!-f $request_filename) {
+            rewrite ^ /index.html break;
+        }
+    }
+}

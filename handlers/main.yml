@@ -1,0 +1,10 @@
+---
+# handlers file for roles/webtier
+
+- name: restart nginx
+  service:  name=nginx state=restarted
+  sudo: yes
+
+- name: stop nginx
+  service:  name=nginx state=stopped
+  sudo: yes
