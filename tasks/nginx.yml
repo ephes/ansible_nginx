@@ -23,10 +23,10 @@
   sudo: yes
   file: path='/etc/nginx/sites-enabled/default' state=absent
 
-- name: add konektom site config to sites-available
+- name: add webapp site config to sites-available
   sudo: yes
   template: src=site.conf.j2
-            dest=/etc/nginx/sites-available/konektom
+            dest=/etc/nginx/sites-available/django_webapp
   notify:
       - restart nginx
 
@@ -39,8 +39,8 @@
 
 - name: add symlink in nginx sites-enabled
   sudo: yes
-  file: src=/etc/nginx/sites-available/konektom
-        dest=/etc/nginx/sites-enabled/konektom state=link
+  file: src=/etc/nginx/sites-available/django_webapp
+        dest=/etc/nginx/sites-enabled/django_webapp state=link
   notify:
     - restart nginx
 
