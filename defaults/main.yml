@@ -1,0 +1,4 @@
+--- 
+
+nginx_maintenance_dir: "/etc/nginx/maintenance"
+nginx_proxy_set_header_port: ""
