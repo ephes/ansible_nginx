@@ -13,11 +13,13 @@
 
 - name: copy ssl server crt to box
   sudo: yes
-  copy: src=ssl/server.crt dest=/etc/nginx/ssl/server.crt mode=0644
+  template: src=server.crt.j2
+            dest=/etc/nginx/ssl/server.crt
 
 - name: copy ssl server key to box
   sudo: yes
-  copy: src=ssl/server.key dest=/etc/nginx/ssl/server.key mode=0644
+  template: src=server.key.j2
+            dest=/etc/nginx/ssl/server.key
 
 - name: remove obsolete default nginx config link
   sudo: yes
